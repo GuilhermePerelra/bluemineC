@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Demandas</title>
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+  <script src="assets/js/bootstrap.bundle.min.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+</head>
+a
+<body class="bg-dark text-light">
+
+  <div id="navbar"></div>
+
+  <div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Todas as Demandas</h2>
+      <button class="btn btn-primary" id="btnNova">+ Nova Demanda</button>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="card bg-secondary mb-3">
+      <div class="card-body">
+
+        <div class="row g-3">
+
+          <div class="col-md-4">
+            <input id="search" type="text" class="form-control" placeholder="Pesquisar...">
+          </div>
+
+          <div class="col-md-2">
+            <select id="filterStatus" class="form-select">
+              <option value="">Status</option>
+              <option value="open">Pendente</option>
+              <option value="in_progress">Em andamento</option>
+              <option value="done">Concluído</option>
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <select id="filterPriority" class="form-select">
+              <option value="">Prioridade</option>
+              <option value="low">Baixa</option>
+              <option value="medium">Média</option>
+              <option value="high">Alta</option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <select id="filterAssignee" class="form-select">
+              <option value="">Responsável</option>
+            </select>
+          </div>
+
+          <div class="col-md-1">
+            <button class="btn btn-outline-light w-100" id="btnClear">Limpar</button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TABELA -->
+    <table class="table table-dark table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Título</th>
+          <th>Prioridade</th>
+          <th>Responsável</th>
+          <th>Status</th>
+          <th>Criação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+
+  </div>
+
+</body>
+</html>
