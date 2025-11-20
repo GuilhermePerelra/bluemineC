@@ -21,5 +21,6 @@ from blueMine import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.visualizarHome, name='home')
+    path('', views.home, name='home'),
+    path('cadastro/<str:tipo>/', views.cadastro, name='cadastro'),
 ]
