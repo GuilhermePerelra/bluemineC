@@ -1,85 +1,152 @@
-<!doctype html>
-<html lang="pt-br">
+{% extends 'privado/base.html' %}
 
-<head>
-  <meta charset="UTF-8">
-  <title>Demandas</title>
-  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-  <script src="assets/js/bootstrap.bundle.min.js" defer></script>
-  <script src="assets/js/app.js" defer></script>
-</head>
-a
-<body class="bg-dark text-light">
+{% block content %}
+<div class="container py-4">
 
-  <div id="navbar"></div>
+  <!-- Cabeçalho -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Todas as Demandas</h2>
+    {% if usuario_obj.temPrivilegio %}
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalDemanda">
+        + Nova Demanda
+      </button>
+    {% endif %}
+  </div>
 
-  <div class="container py-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>Todas as Demandas</h2>
-      <button class="btn btn-primary" id="btnNova">+ Nova Demanda</button>
+  <!-- FILTROS -->
+  <div class="card bg-secondary mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input id="search" type="text" class="form-control" placeholder="Pesquisar...">
+        </div>
+        <div class="col-md-2">
+          <select id="filterStatus" class="form-select">
+            <option value="">Status</option>
+            <option value="aberto">Aberto</option>
+            <option value="em_andamento">Em Andamento</option>
+            <option value="concluido">Concluído</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <input type="date" id="filterPrazo" class="form-control" placeholder="Prazo">
+        </div>
+        <div class="col-md-3">
+          <select id="filterFuncionario" class="form-select">
+            <option value="">Funcionário</option>
+            {% for funcionario in funcionarios %}
+              <option value="{{ funcionario.id }}">{{ funcionario.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button class="btn btn-outline-light w-100" id="btnClear">Limpar</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- FILTROS -->
-    <div class="card bg-secondary mb-3">
-      <div class="card-body">
+  <!-- TABELA -->
+  <table class="table table-dark table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Título</th>
+        <th>Funcionário</th>
+        <th>Líder</th>
+        <th>Status</th>
+        <th>Prazo</th>
+        <th>Data Criação</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for demanda in demandas %}
+      <tr>
+        <td>{{ demanda.id }}</td>
+        <td>{{ demanda.titulo }}</td>
+        <td>{{ demanda.funcionario.nome }}</td>
+        <td>{{ demanda.lider.nome }}</td>
+        <td>{{ demanda.get_status_display }}</td>
+        <td>{{ demanda.prazo|date:"d/m/Y H:i" }}</td>
+        <td>{{ demanda.data_criacao|date:"d/m/Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">Nenhuma demanda encontrada.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-        <div class="row g-3">
+</div>
 
-          <div class="col-md-4">
-            <input id="search" type="text" class="form-control" placeholder="Pesquisar...">
+<!-- MODAL DE CRIAÇÃO DE DEMANDA -->
+<div class="modal fade" id="modalDemanda" tabindex="-1" aria-labelledby="modalDemandaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDemandaLabel">Nova Demanda</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <form method="post" {% comment %} action="{% url 'criar_demanda' %}" {% endcomment %} enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label for="titulo" class="form-label text-black ">Título</label>
+            <input type="text" class="form-control" id="titulo" name="titulo" maxlength="30" required>
           </div>
 
-          <div class="col-md-2">
-            <select id="filterStatus" class="form-select">
-              <option value="">Status</option>
-              <option value="open">Pendente</option>
-              <option value="in_progress">Em andamento</option>
-              <option value="done">Concluído</option>
-            </select>
+          <div class="mb-3">
+            <label for="descricao" class="form-label text-black">Descrição</label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="4" required></textarea>
           </div>
 
-          <div class="col-md-2">
-            <select id="filterPriority" class="form-select">
-              <option value="">Prioridade</option>
-              <option value="low">Baixa</option>
-              <option value="medium">Média</option>
-              <option value="high">Alta</option>
-            </select>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="funcionario" class="form-label text-black">Funcionário</label>
+              <select class="form-select" id="funcionario" name="funcionario" required>
+              {% comment %}   {% for u in usuarios %}
+                  <option value="{{ u.id }}">{{ u.nome }}</option>
+                {% endfor %} {% endcomment %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="lider" class="form-label text-black">Líder</label>
+              <select class="form-select" id="lider" name="lider" required>
+            {% comment %}     {% for u in usuarios %}
+                  {% if u.temPrivilegio %}
+                    <option value="{{ u.id }}">{{ u.nome }}</option>
+                  {% endif %}
+                {% endfor %} {% endcomment %}
+              </select>
+            </div>
           </div>
 
-          <div class="col-md-3">
-            <select id="filterAssignee" class="form-select">
-              <option value="">Responsável</option>
-            </select>
-          </div>
-
-          <div class="col-md-1">
-            <button class="btn btn-outline-light w-100" id="btnClear">Limpar</button>
+          <div class="row g-3 mt-2">
+            <div class="col-md-6">
+              <label for="prazo" class="form-label text-black">Prazo</label>
+              <input type="datetime-local" class="form-control" id="prazo" name="prazo" required>
+            </div>
+            <div class="col-md-6">
+              <label for="anexo" class="form-label text-black">Anexo</label>
+              <input type="file" class="form-control" id="anexo" name="anexo">
+            </div>
           </div>
 
         </div>
 
-      </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+
+      </form>
+
     </div>
-
-    <!-- TABELA -->
-    <table class="table table-dark table-striped">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Título</th>
-          <th>Prioridade</th>
-          <th>Responsável</th>
-          <th>Status</th>
-          <th>Criação</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-
   </div>
+</div>
 
-</body>
-</html>
+{% endblock %}

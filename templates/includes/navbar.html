@@ -34,9 +34,9 @@
       </ul>
 
       <span class="navbar-text text-white me-3">
-        Usuário: <strong>admin</strong>
+        Usuário: <strong>{{ usuario_obj.nome }}</strong>
       </span>
-      <a href="index.html" class="btn btn-outline-light btn-sm">Sair</a>
+      <a href="{% url 'home' %}" class="btn btn-outline-light btn-sm">Sair</a>
 
     </div>
   </div>

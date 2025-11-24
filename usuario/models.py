@@ -25,6 +25,10 @@ class Usuario(models.Model):
     status = models.CharField(max_length=4, choices=Status.choices, default=Status.ATIVO)
 
 
+    def temPrivilegio(self):
+        return self.tipo == Tipo_Usuario.ADM or self.tipo == Tipo_Usuario.LID
+    
+
     def __str__(self):
         return self.nome
     

@@ -29,7 +29,7 @@
             <p class="text-muted">Acesse sua conta</p>
           </div>
 
-          <form action="" method="post">
+          <form action="{% url 'home' %}" method="post">
             {% csrf_token %}
             
             <div class="mb-3">
@@ -38,7 +38,7 @@
                 <span class="input-group-text bg-primary text-white">
                   <i class="bi bi-person"></i>
                 </span>
-                <input type="text" class="form-control" placeholder="admin">
+                <input type="text" name='usuario' class="form-control" placeholder="admin">
               </div>
             </div>
 
@@ -48,7 +48,7 @@
                 <span class="input-group-text bg-primary text-white">
                   <i class="bi bi-lock"></i>
                 </span>
-                <input type="password" class="form-control" placeholder="••••••">
+                <input type="password" name='senha' class="form-control" placeholder="••••••">
               </div>
             </div>
 
@@ -58,7 +58,7 @@
 
           <div class="text-center mt-3">
             <a href="{% url 'cadastro' 'colaborador' %}" class="text-decoration-none m-3">Cadastro de Colaborador</a>
-            <a href="{% url 'cadastro' 'responsavel' %}" class="text-decoration-none m-3">Cadastro de Responsável</a>
+            <a href="{% url 'cadastro' 'lider' %}" class="text-decoration-none m-3">Cadastro de Responsável</a>
           </div>
 
         </div>
