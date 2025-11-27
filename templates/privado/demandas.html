@@ -59,6 +59,90 @@
           {% endif %}
         </td>
       </tr>
+      <!-- Edit Modal for this demand -->
+      <div class="modal fade" id="modalEditar{{ d.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title text-dark">Editar Demanda #{{ d.id }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="post" action="{% url 'editarDemanda' d.id %}" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="modal-body">
+
+                <div class="mb-3">
+                  <label class="form-label text-dark">Título</label>
+                  <input type="text" class="form-control" name="titulo" value="{{ d.titulo }}" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label text-dark">Descrição</label>
+                  <textarea class="form-control" name="descricao" rows="3" required>{{ d.descricao }}</textarea>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Funcionário</label>
+                    <select class="form-select" name="funcionario" required>
+                      {% for u in funcionarios %}
+                        <option value="{{ u.id }}" {% if u.id == d.funcionario.id %}selected{% endif %}>{{ u.nome }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Departamento</label>
+                    <select class="form-select" name="departamento" required>
+                      {% for dep in departamentos %}
+                        <option value="{{ dep.id }}" {% if dep.id == d.departamento.id %}selected{% endif %}>{{ dep.nome }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Tipo</label>
+                    <select class="form-select" name="tipo" required>
+                      <option value="correcao" {% if d.tipo == 'correcao' %}selected{% endif %}>Correção</option>
+                      <option value="melhoria" {% if d.tipo == 'melhoria' %}selected{% endif %}>Melhoria</option>
+                      <option value="implementacao" {% if d.tipo == 'implementacao' %}selected{% endif %}>Implementação</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Prazo</label>
+                    <input type="datetime-local" class="form-control" name="prazo" value="{{ d.prazo|date:'Y-m-d\TH:i' }}" required>
+                  </div>
+                </div>
+
+                {% if usuario_obj.temPrivilegio %}
+                <div class="mt-3">
+                  <label class="form-label text-dark">Status</label>
+                  <select class="form-select" name="status">
+                    {% for code, label in status_choices %}
+                      <option value="{{ code }}" {% if code == d.status %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                  <label class="form-label text-dark">Anexo</label>
+                  <input type="file" class="form-control" name="anexo">
+                </div>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </div>
       {% empty %}
       <tr>
         <td colspan="8" class="text-center">Nenhuma demanda encontrada.</td>

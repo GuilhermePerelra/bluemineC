@@ -25,5 +25,6 @@ urlpatterns = [
     path('cadastro/<str:tipo>/', views.cadastro, name='cadastro'),
     path('privado/departamento/', include('departamento.urls')),
     path('privado/demanda/', include('demanda.urls')),
+    path('privado/', include('dashboard.urls')),
     path('logout', views.logout, name='logout'),
 ]

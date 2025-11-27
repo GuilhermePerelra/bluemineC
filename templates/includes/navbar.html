@@ -11,25 +11,26 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'demandas' %}">Todas as demandas</a>
+          <a class="nav-link" href="{% url 'dashboard:index' %}">Dashboard</a>
         </li>
 
+        {% if usuario_obj and usuario_obj.temPrivilegio %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'demandas' %}">Todas as demandas</a>
+        </li>
+        {% endif %}
+
+        {% if usuario_obj and not usuario_obj.temPrivilegio %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'minhasDemandas' %}">Minhas Demandas</a>
         </li>
+        {% endif %}
 
         <li class="nav-item">
           <a class="nav-link" href="{% url 'departamento' %}">Departamento</a>
         </li>
 
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Tipos</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="tipos/correcoes.html">Correções</a></li>
-            <li><a class="dropdown-item" href="tipos/melhorias.html">Melhorias</a></li>
-            <li><a class="dropdown-item" href="tipos/implementacoes.html">Implementações</a></li>
-          </ul>
-        </li>
+  <!-- Tipos removido conforme solicitado -->
 
       </ul>
 

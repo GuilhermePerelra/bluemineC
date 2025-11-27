@@ -31,7 +31,9 @@
         <th>ID</th>
         <th>Nome</th>
         <th>Líderes</th>
+        {% if not usuario_obj or not usuario_obj.tipo == 'func' %}
         <th>Ações</th>
+        {% endif %}
       </tr>
     </thead>
     <tbody>
@@ -47,13 +49,27 @@
           {% endfor %}
         </td>
         <td>
-          <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditar{{ dep.id }}">
-            Editar
-          </button>
+          {% if usuario_obj %}
+            {% if usuario_obj.tipo == 'adm' or usuario_obj in dep.lideres.all %}
+              <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditar{{ dep.id }}">
+                Editar
+              </button>
 
-          <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ dep.id }}">
-            Excluir
-          </button>
+              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ dep.id }}">
+          {% if not usuario_obj or not usuario_obj.tipo == 'func' %}
+          <td>
+              </button>
+            {% endif %}
+          {% endif %}
+
+          {% if usuario_obj in dep.lideres.all %}
+            <form method="post" action="{% url 'sair_departamento' dep.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Confirma que deseja sair deste departamento?');">
+                Sair do departamento
+              </button>
+            </form>
+          {% endif %}
         </td>
       </tr>
       {% empty %}
@@ -61,7 +77,8 @@
         <td colspan="4" class="text-center">Nenhum departamento cadastrado.</td>
       </tr>
       {% endfor %}
-    </tbody>
+          </td>
+          {% endif %}
   </table>
 </div>
 
@@ -85,12 +102,30 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label text-dark">Líderes</label>
-            <select class="form-select" name="lideres" multiple required>
-              {% for user in lideres %}
-                <option value="{{ user.id }}">{{ user.nome }}</option>
-              {% endfor %}
-            </select>
+            {% if usuario_obj.tipo == 'adm' %}
+              <label class="form-label text-dark">Líderes</label>
+              <select class="form-select" name="lideres" multiple required>
+                {% for user in lideres %}
+                  <option value="{{ user.id }}">{{ user.nome }}</option>
+                {% endfor %}
+              </select>
+
+              <label class="form-label text-dark mt-2">Membros</label>
+              <select class="form-select" name="membros" multiple>
+                {% for user in funcionarios %}
+                  <option value="{{ user.id }}">{{ user.nome }}</option>
+                {% endfor %}
+              </select>
+            {% else %}
+              {# não-admins (ex.: líderes) tornam-se líderes por padrão ao criar; enviar hidden input com seu id #}
+              <input type="hidden" name="lideres" value="{{ usuario_obj.id }}">
+              <label class="form-label text-dark">Membros</label>
+              <select class="form-select" name="membros" multiple>
+                {% for user in funcionarios_sem_departamento %}
+                  <option value="{{ user.id }}">{{ user.nome }}</option>
+                {% endfor %}
+              </select>
+            {% endif %}
           </div>
 
         </div>
@@ -127,15 +162,37 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label text-dark">Líderes</label>
-            <select class="form-select" name="lideres" multiple required>
-              {% for user in lideres %}
-                <option value="{{ user.id }}"
-                        {% if user in dep.lideres.all %}selected{% endif %}>
-                  {{ user.nome }}
-                </option>
-              {% endfor %}
-            </select>
+            {% if usuario_obj.tipo == 'adm' %}
+              <label class="form-label text-dark">Líderes</label>
+              <select class="form-select" name="lideres" multiple required>
+                {% for user in lideres %}
+                  <option value="{{ user.id }}"
+                          {% if user in dep.lideres.all %}selected{% endif %}>
+                    {{ user.nome }}
+                  </option>
+                {% endfor %}
+              </select>
+
+              <label class="form-label text-dark mt-2">Membros</label>
+              <select class="form-select" name="membros" multiple>
+                {% for user in funcionarios %}
+                  <option value="{{ user.id }}"
+                          {% if user in dep.membros.all %}selected{% endif %}>
+                    {{ user.nome }}
+                  </option>
+                {% endfor %}
+              </select>
+            {% else %}
+              <label class="form-label text-dark">Funcionários</label>
+              <select class="form-select" name="membros" multiple>
+                {% for user in funcionarios %}
+                  <option value="{{ user.id }}"
+                          {% if user in dep.membros.all %}selected{% endif %}>
+                    {{ user.nome }}
+                  </option>
+                {% endfor %}
+              </select>
+            {% endif %}
           </div>
 
         </div>

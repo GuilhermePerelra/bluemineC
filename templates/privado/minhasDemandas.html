@@ -25,13 +25,51 @@
       <tr>
         <td>{{ demanda.id }}</td>
         <td>{{ demanda.titulo }}</td>
+        <td>
+          {{ demanda.titulo }}
+        </td>
         <td>{{ demanda.departamento.nome }}</td>
         <td>{{ demanda.lider.nome }}</td>
-        <td>{{ demanda.get_status_display }}</td>
+  <td>{{ demanda.get_status_display }}</td>
         <td>{{ demanda.prazo|date:"d/m/Y H:i" }}</td>
         <td>{{ demanda.data_criacao|date:"d/m/Y H:i" }}</td>
         <td>{{ demanda.tipo }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditar{{ demanda.id }}">Editar</button>
+        </td>
       </tr>
+      <!-- Edit modal for this user's demanda -->
+      <div class="modal fade" id="modalEditar{{ demanda.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title text-dark">Editar Minha Demanda #{{ demanda.id }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'editarDemanda' demanda.id %}">
+              {% csrf_token %}
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label text-dark">Descrição</label>
+                  <textarea class="form-control" name="descricao" rows="3">{{ demanda.descricao }}</textarea>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label text-dark">Status</label>
+                  <select class="form-select" name="status">
+                    {% for code, label in status_choices %}
+                      <option value="{{ code }}" {% if code == demanda.status %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
       {% empty %}
       <tr>
         <td colspan="8" class="text-center">Nenhuma demanda encontrada.</td>
