@@ -11,15 +11,15 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
         <li class="nav-item">
-          <a class="nav-link" href="demandas.html">Todas as demandas</a>
+          <a class="nav-link" href="{% url 'demandas' %}">Todas as demandas</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="minhas-demandas.html">Minhas Demandas</a>
+          <a class="nav-link" href="{% url 'minhasDemandas' %}">Minhas Demandas</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="departamento.html">Departamento</a>
+          <a class="nav-link" href="{% url 'departamento' %}">Departamento</a>
         </li>
 
         <li class="nav-item dropdown">
@@ -36,7 +36,7 @@
       <span class="navbar-text text-white me-3">
         Usuário: <strong>{{ usuario_obj.nome }}</strong>
       </span>
-      <a href="{% url 'home' %}" class="btn btn-outline-light btn-sm">Sair</a>
+      <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Sair</a>
 
     </div>
   </div>

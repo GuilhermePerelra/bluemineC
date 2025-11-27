@@ -15,7 +15,6 @@ class Status(models.TextChoices):
 
 class Usuario(models.Model):
     id = models.AutoField(primary_key=True)
-    departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE, null=True, blank=True)
     nome = models.CharField(max_length=100)
     usuario = models.CharField(max_length=100)
     senha = models.CharField(max_length=100)
