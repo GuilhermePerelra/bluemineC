@@ -48,37 +48,48 @@
             <span class="text-muted">Sem líderes</span>
           {% endfor %}
         </td>
+        {% if not usuario_obj or not usuario_obj.tipo == 'func' %}
         <td>
           {% if usuario_obj %}
             {% if usuario_obj.tipo == 'adm' or usuario_obj in dep.lideres.all %}
-              <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditar{{ dep.id }}">
-                Editar
-              </button>
-
-              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ dep.id }}">
-          {% if not usuario_obj or not usuario_obj.tipo == 'func' %}
-          <td>
-              </button>
+              <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditar{{ dep.id }}">Editar</button>
+              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ dep.id }}">Excluir</button>
             {% endif %}
           {% endif %}
 
           {% if usuario_obj in dep.lideres.all %}
             <form method="post" action="{% url 'sair_departamento' dep.id %}" class="d-inline">
               {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Confirma que deseja sair deste departamento?');">
-                Sair do departamento
-              </button>
+              <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Confirma que deseja sair deste departamento?');">Sair do departamento</button>
             </form>
           {% endif %}
+
+          <div class="mt-2">
+            {% for m in dep.membros.all %}
+              <div class="d-inline-block me-2">
+                {{ m.nome }}
+                {% if usuario_obj %}
+                  {% if usuario_obj.tipo == 'adm' or usuario_obj in dep.lideres.all %}
+                    <form method="post" action="{% url 'remover_membro' dep.id m.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remover {{ m.nome }} deste departamento?');">x</button>
+                    </form>
+                  {% endif %}
+                {% endif %}
+              </div>
+            {% empty %}
+              <div class="text-muted">Sem membros</div>
+            {% endfor %}
+          </div>
         </td>
+        {% endif %}
       </tr>
       {% empty %}
       <tr>
         <td colspan="4" class="text-center">Nenhum departamento cadastrado.</td>
       </tr>
       {% endfor %}
-          </td>
-          {% endif %}
+    </tbody>
   </table>
 </div>
 

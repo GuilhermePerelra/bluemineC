@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.db.models import Count
+from django.db.models import Count, Case, When, IntegerField
 from demanda.models import Demanda
 from departamento.models import Departamento
 from usuario.models import Usuario, Tipo_Usuario
@@ -30,10 +30,31 @@ def index(request):
     # últimas demandas (base)
     ult_qs = Demanda.objects.select_related('departamento', 'lider').order_by('-data_criacao')
 
+    # ordenação (query param)
+    order = request.GET.get('order')
+
     # aplicar filtro por departamento (query param) se fornecido
     if dept_id:
         try:
             ult_qs = ult_qs.filter(departamento_id=int(dept_id))
+        except Exception:
+            pass
+
+    # Se usuário privilegiado solicitou ordenação por volume de demandas por funcionário,
+    # ordenamos as demandas por uma classificação do funcionário (mais demandas primeiro).
+    if usuario_obj and usuario_obj.temPrivilegio() and order == 'func_count':
+        try:
+            func_counts = (
+                Demanda.objects.filter(**({'departamento_id': int(dept_id)} if dept_id and dept_id.isdigit() else {}))
+                .values('funcionario')
+                .annotate(cnt=Count('id'))
+                .order_by('-cnt')
+            )
+            func_ids_ordered = [item['funcionario'] for item in func_counts]
+            # build Case/When to map funcionario_id to rank
+            whens = [When(funcionario_id=fid, then=pos) for pos, fid in enumerate(func_ids_ordered)]
+            if whens:
+                ult_qs = ult_qs.annotate(func_rank=Case(*whens, output_field=IntegerField())).order_by('func_rank', '-data_criacao')
         except Exception:
             pass
 
@@ -55,6 +76,7 @@ def index(request):
         'departamentos': departamentos,
         'ultimas': ultimas,
         'selected_dept': int(dept_id) if dept_id and dept_id.isdigit() else None,
+    'order': order,
         'usuario_obj': usuario_obj,
     }
     return render(request, 'privado/dashboard.html', context)

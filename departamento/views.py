@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from usuario.models import Usuario, Tipo_Usuario
-from demanda.models import Departamento
+from departamento.models import Departamento
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponseForbidden
 
 def checkSession(request):
     usuario_id = request.session.get('usuario_id')
@@ -142,5 +143,37 @@ def sairDepartamento(request, id):
             departamento.lideres.remove(usuario_obj)
             messages.success(request, 'Você saiu do grupo de líderes deste departamento.')
             return redirect('departamento')
+
+    return redirect('departamento')
+
+
+def removerMembro(request, dep_id, usuario_id):
+    """Remove a member from departamento.membros. Allowed for ADM or department leaders."""
+    usuario_obj = checkSession(request)
+    if not usuario_obj:
+        return redirect('home')
+
+    try:
+        departamento = Departamento.objects.get(id=dep_id)
+    except Departamento.DoesNotExist:
+        messages.error(request, 'Departamento não encontrado.')
+        return redirect('departamento')
+
+    # permission: ADM or current leader
+    if usuario_obj.tipo != Tipo_Usuario.ADM and usuario_obj not in departamento.lideres.all():
+        return HttpResponseForbidden('Sem permissão')
+
+    if request.method == 'POST':
+        try:
+            membro = Usuario.objects.get(id=usuario_id)
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Usuário não encontrado.')
+            return redirect('departamento')
+
+        if membro in departamento.membros.all():
+            departamento.membros.remove(membro)
+            messages.success(request, f'Usuário {membro.nome} removido do departamento.')
+        else:
+            messages.info(request, 'Usuário não é membro deste departamento.')
 
     return redirect('departamento')

@@ -25,15 +25,12 @@
       <tr>
         <td>{{ demanda.id }}</td>
         <td>{{ demanda.titulo }}</td>
-        <td>
-          {{ demanda.titulo }}
-        </td>
         <td>{{ demanda.departamento.nome }}</td>
-        <td>{{ demanda.lider.nome }}</td>
-  <td>{{ demanda.get_status_display }}</td>
+        <td>{% if demanda.lider %}{{ demanda.lider.nome }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+        <td>{{ demanda.get_status_display }}</td>
         <td>{{ demanda.prazo|date:"d/m/Y H:i" }}</td>
         <td>{{ demanda.data_criacao|date:"d/m/Y H:i" }}</td>
-        <td>{{ demanda.tipo }}</td>
+        <td>{{ demanda.get_tipo_display }}</td>
         <td>
           <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditar{{ demanda.id }}">Editar</button>
         </td>

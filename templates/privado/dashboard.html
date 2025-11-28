@@ -16,6 +16,12 @@
             <option value="{{ d.id }}" {% if selected_dept == d.id %}selected{% endif %}>{{ d.nome }} ({{ d.qtd }})</option>
           {% endfor %}
         </select>
+        {% if usuario_obj and usuario_obj.temPrivilegio %}
+        <select name="order" class="form-select form-select-sm me-2">
+          <option value="">Ordenação padrão</option>
+          <option value="func_count" {% if order == 'func_count' %}selected{% endif %}>Ordenar por funcionário (mais demandas)</option>
+        </select>
+        {% endif %}
         <button class="btn btn-outline-light btn-sm">Filtrar</button>
       </form>
     </div>

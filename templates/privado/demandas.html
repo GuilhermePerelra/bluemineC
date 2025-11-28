@@ -45,7 +45,7 @@
       <tr>
         <td>{{ d.id }}</td>
         <td>{{ d.titulo }}</td>
-        <td>{{ d.funcionario.nome }}</td>
+  <td>{% if d.funcionario %}{{ d.funcionario.nome }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
         <td>{{ d.departamento.nome }}</td>
         <td>{{ d.get_tipo_display }}</td>
         <td>{{ d.get_status_display }}</td>

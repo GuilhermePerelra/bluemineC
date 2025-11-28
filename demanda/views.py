@@ -81,7 +81,6 @@ def editarDemanda(request, id):
         if not usuario_id:
             return redirect('home')
         usuario_obj = Usuario.objects.get(id=usuario_id)
-
         # usuários privilegiados (LID/ADM) podem editar todos os campos
         if usuario_obj.temPrivilegio():
             demanda.titulo = request.POST.get('titulo')
@@ -100,6 +99,10 @@ def editarDemanda(request, id):
 
         # funcionário pode alterar somente descricao e status de sua própria demanda
         if demanda.funcionario_id == usuario_obj.id:
+            # only prevent edits if the demanda is already concluded
+            if demanda.status == 'concluido':
+                return redirect('demandas')
+
             demanda.descricao = request.POST.get('descricao', demanda.descricao)
             new_status = request.POST.get('status')
             # validar status
@@ -110,7 +113,7 @@ def editarDemanda(request, id):
             if new_status and new_status in allowed:
                 demanda.status = new_status
             demanda.save()
-            return redirect("demandas")
+            return redirect("minhasDemandas")
 
         # caso não tenha permissão
         return redirect("demandas")
