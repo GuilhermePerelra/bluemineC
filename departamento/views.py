@@ -81,14 +81,26 @@ def editarDepartamento(request, id):
 
     if request.method == 'POST':
         nome = request.POST.get('nome')
-        lideres_ids = request.POST.getlist('lideres')
+        # Only update leaders if the form included the field (admins or when leaders explicitly manage leaders)
+        lideres_ids = request.POST.getlist('lideres') if 'lideres' in request.POST else None
 
         departamento.nome = nome
         departamento.save()
-        departamento.lideres.set(lideres_ids)
 
-        membros_ids = request.POST.getlist('membros')
-        if membros_ids:
+        if lideres_ids is not None:
+            # if empty list provided, this will clear leaders; ensure at least one leader remains
+            if len(lideres_ids) == 0:
+                messages.error(request, 'O departamento precisa ter pelo menos um líder.')
+            else:
+                # Prevent the current user from removing themself via the edit form.
+                if usuario_obj in departamento.lideres.all() and str(usuario_obj.id) not in lideres_ids:
+                    messages.error(request, 'Você não pode remover a si mesmo via edição. Use o botão "Sair do departamento" para sair como líder.')
+                else:
+                    departamento.lideres.set(lideres_ids)
+
+        # Update members only if provided in the form; otherwise keep existing members
+        membros_ids = request.POST.getlist('membros') if 'membros' in request.POST else None
+        if membros_ids is not None:
             departamento.membros.set(membros_ids)
 
         return redirect('departamento')

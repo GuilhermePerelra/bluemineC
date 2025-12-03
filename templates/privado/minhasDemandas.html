@@ -43,7 +43,7 @@
               <h5 class="modal-title text-dark">Editar Minha Demanda #{{ demanda.id }}</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'editarDemanda' demanda.id %}">
+            <form id="edit-form-{{ demanda.id }}" method="post" action="{% url 'editarDemanda' demanda.id %}">
               {% csrf_token %}
               <div class="modal-body">
                 <div class="mb-3">
@@ -57,13 +57,28 @@
                       <option value="{{ code }}" {% if code == demanda.status %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                   </select>
+              </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center gap-2 p-3 border-top">
+                <div class="me-3">
+                  <label class="me-2 mb-0 text-dark small">Reatribuir</label>
+                  <select class="form-select form-select-sm me-2" style="min-width:200px; max-width:320px;" name="novo_funcionario">
+                    <option value="">— selecione —</option>
+                    {# Show department members (FUNC) excluding the logged-in user #}
+                    {% for f in demanda.departamento.membros.all %}
+                      {% if f.tipo == 'func' and f.id != usuario_obj.id %}
+                        <option value="{{ f.id }}">{{ f.nome }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="d-flex align-items-center">
+                  <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="submit" class="btn btn-primary" form="edit-form-{{ demanda.id }}">Salvar</button>
                 </div>
               </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Salvar</button>
-              </div>
-            </form>
+              </form>
           </div>
         </div>
       </div>
@@ -76,4 +91,8 @@
   </table>
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+{# No page-level scripts required; reassign is handled in the edit form submission. #}
 {% endblock %}

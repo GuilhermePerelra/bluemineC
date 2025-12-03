@@ -32,7 +32,7 @@
         <th>Nome</th>
         <th>Líderes</th>
         {% if not usuario_obj or not usuario_obj.tipo == 'func' %}
-        <th>Ações</th>
+        <th>Membros</th>
         {% endif %}
       </tr>
     </thead>
@@ -45,7 +45,7 @@
           {% for l in dep.lideres.all %}
             {{ l.nome }}{% if not forloop.last %}, {% endif %}
           {% empty %}
-            <span class="text-muted">Sem líderes</span>
+            <span class="text-white">Sem líderes</span>
           {% endfor %}
         </td>
         {% if not usuario_obj or not usuario_obj.tipo == 'func' %}
@@ -78,7 +78,7 @@
                 {% endif %}
               </div>
             {% empty %}
-              <div class="text-muted">Sem membros</div>
+              <div class="text-white">Sem membros</div>
             {% endfor %}
           </div>
         </td>
@@ -132,7 +132,7 @@
               <input type="hidden" name="lideres" value="{{ usuario_obj.id }}">
               <label class="form-label text-dark">Membros</label>
               <select class="form-select" name="membros" multiple>
-                {% for user in funcionarios_sem_departamento %}
+                {% for user in funcionarios %}
                   <option value="{{ user.id }}">{{ user.nome }}</option>
                 {% endfor %}
               </select>
@@ -173,16 +173,21 @@
           </div>
 
           <div class="mb-3">
-            {% if usuario_obj.tipo == 'adm' %}
+            {% if usuario_obj.tipo == 'adm' or usuario_obj in dep.lideres.all %}
               <label class="form-label text-dark">Líderes</label>
               <select class="form-select" name="lideres" multiple required>
                 {% for user in lideres %}
                   <option value="{{ user.id }}"
-                          {% if user in dep.lideres.all %}selected{% endif %}>
-                    {{ user.nome }}
+                          {% if user in dep.lideres.all %}selected{% endif %}
+                          {% if usuario_obj in dep.lideres.all and user.id == usuario_obj.id %}disabled{% endif %}>
+                    {{ user.nome }}{% if usuario_obj in dep.lideres.all and user.id == usuario_obj.id %} (você){% endif %}
                   </option>
                 {% endfor %}
               </select>
+              {# If current user is a leader, include hidden input so their id is preserved on submit and they can't remove themselves via edit #}
+              {% if usuario_obj in dep.lideres.all %}
+                <input type="hidden" name="lideres" value="{{ usuario_obj.id }}">
+              {% endif %}
 
               <label class="form-label text-dark mt-2">Membros</label>
               <select class="form-select" name="membros" multiple>

@@ -19,7 +19,7 @@
         {% if usuario_obj and usuario_obj.temPrivilegio %}
         <select name="order" class="form-select form-select-sm me-2">
           <option value="">Ordenação padrão</option>
-          <option value="func_count" {% if order == 'func_count' %}selected{% endif %}>Ordenar por funcionário (mais demandas)</option>
+          <option value="func_count" {% if order == 'func_count' %}selected{% endif %}>Ordenar por funcionário (mais demandas concluídas)</option>
         </select>
         {% endif %}
         <button class="btn btn-outline-light btn-sm">Filtrar</button>
@@ -52,6 +52,7 @@
               <th>ID</th>
               <th>Título</th>
               <th>Departamento</th>
+              <th>Funcionário</th>
               <th>Líder</th>
               <th>Status</th>
               <th>Data</th>
@@ -63,6 +64,7 @@
               <td>{{ d.id }}</td>
               <td>{{ d.titulo }}</td>
               <td>{{ d.departamento.nome }}</td>
+              <td>{{ d.funcionario.nome }}</td>
               <td>{{ d.lider.nome }}</td>
               <td>{{ d.get_status_display }}</td>
               <td>{{ d.data_criacao|date:"d/m/Y H:i" }}</td>
