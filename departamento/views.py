@@ -49,7 +49,7 @@ def criarDepartamento(request):
 
     if request.method == 'POST':
         nome = request.POST.get('nome')
-        # admins can choose líderes; se criador for líder (não admin), ele se torna líder por padrão
+        # admins conseguem escolher lideres; se criador for líder (não admin), ele se torna líder por padrão
         if usuario_obj.tipo == Tipo_Usuario.ADM:
             lideres_ids = request.POST.getlist('lideres')
         else:
@@ -81,24 +81,24 @@ def editarDepartamento(request, id):
 
     if request.method == 'POST':
         nome = request.POST.get('nome')
-        # Only update leaders if the form included the field (admins or when leaders explicitly manage leaders)
+        #Pega lista de ids dos lideres na requisição
         lideres_ids = request.POST.getlist('lideres') if 'lideres' in request.POST else None
 
         departamento.nome = nome
         departamento.save()
 
         if lideres_ids is not None:
-            # if empty list provided, this will clear leaders; ensure at least one leader remains
+            # verifica se a lista ta vazia
             if len(lideres_ids) == 0:
                 messages.error(request, 'O departamento precisa ter pelo menos um líder.')
             else:
-                # Prevent the current user from removing themself via the edit form.
+                # Previne o lider logado de se remover, verificando se esta na lista de ids de lideres enviada
                 if usuario_obj in departamento.lideres.all() and str(usuario_obj.id) not in lideres_ids:
                     messages.error(request, 'Você não pode remover a si mesmo via edição. Use o botão "Sair do departamento" para sair como líder.')
                 else:
                     departamento.lideres.set(lideres_ids)
 
-        # Update members only if provided in the form; otherwise keep existing members
+        #Pega lista de membros se estiver na requisição
         membros_ids = request.POST.getlist('membros') if 'membros' in request.POST else None
         if membros_ids is not None:
             departamento.membros.set(membros_ids)
@@ -126,9 +126,6 @@ def excluirDepartamento(request, id):
 
 
 def sairDepartamento(request, id):
-    """Remove the current user from departamento.lideres.
-    Block the operation if it would leave the department without any leader.
-    """
     usuario_obj = checkSession(request)
     if not usuario_obj:
         return redirect('home')
@@ -139,15 +136,15 @@ def sairDepartamento(request, id):
         messages.error(request, 'Departamento não encontrado.')
         return redirect('departamento')
 
-    # Only current leaders or admins may perform leave
+    # verifica se o usuario é lider de algum departamento ou se é tipo admin
     if usuario_obj not in departamento.lideres.all() and usuario_obj.tipo != Tipo_Usuario.ADM:
         messages.error(request, 'Você não tem permissão para sair deste departamento.')
         return redirect('departamento')
 
     if request.method == 'POST':
-        # If removing this leader would leave zero leaders, block
         current_leaders = list(departamento.lideres.all())
         if usuario_obj in current_leaders:
+        #Bloqueia de sair do departamento se não tiver algum lider substituto
             if len(current_leaders) <= 1:
                 messages.error(request, 'Não é possível sair: este departamento ficaria sem líderes substitutos.')
                 return redirect('departamento')
@@ -171,7 +168,7 @@ def removerMembro(request, dep_id, usuario_id):
         messages.error(request, 'Departamento não encontrado.')
         return redirect('departamento')
 
-    # permission: ADM or current leader
+    # Verifica se o usuario atual é um lider ou um admin
     if usuario_obj.tipo != Tipo_Usuario.ADM and usuario_obj not in departamento.lideres.all():
         return HttpResponseForbidden('Sem permissão')
 
