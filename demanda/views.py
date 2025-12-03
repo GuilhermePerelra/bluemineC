@@ -24,13 +24,13 @@ def demandas(request):
     else:
         demandas = Demanda.objects.all()
 
-    # optimize and ensure funcionario is available in templates
+    
     try:
         demandas = demandas.select_related('funcionario', 'departamento', 'lider')
     except Exception:
         pass
 
-    # provide status choices for templates (avoid _meta access in templates)
+    
     try:
         status_choices = Demanda._meta.get_field('status').choices
     except Exception:
@@ -89,10 +89,10 @@ def editarDemanda(request, id):
         return redirect('home')
     usuario_obj = Usuario.objects.get(id=usuario_id)
 
-    # Only accept POST from the edit forms (modals submit here)
+    
     if request.method != 'POST':
         return redirect('demandas')
-    # capture original owner before any modifications from the form
+    
     original_funcionario_id = demanda.funcionario_id
 
     # usuários privilegiados (LID/ADM) podem editar todos os campos
@@ -112,20 +112,14 @@ def editarDemanda(request, id):
         return redirect("demandas")
 
     # funcionário pode alterar somente descricao e status de sua própria demanda
-    # use original ownership to avoid trusting form-submitted 'funcionario'
     if original_funcionario_id == usuario_obj.id:
-        # Debug: show incoming POST and current demanda values to help diagnose why updates don't persist.
-    # process edits and optional reassign from POST
-        # capture original values; we'll allow reassign even if concluded,
-        # but prevent changes to descricao/status if the demanda was already concluded.
         original_descr = demanda.descricao
         original_status = demanda.status
 
-        # optional reassign from the same form: accept either 'novo_funcionario' or 'funcionario'
-        novo_id = request.POST.get('novo_funcionario') or request.POST.get('funcionario')
+        novo_id = request.POST.get('novo_funcionario')
         new_status = request.POST.get('status')
 
-        # process reassign first (allow even for concluded demandas)
+       
         if novo_id:
             try:
                 novo = Usuario.objects.get(id=int(novo_id))
@@ -137,9 +131,7 @@ def editarDemanda(request, id):
             elif novo.id == usuario_obj.id:
                 messages.error(request, 'Não é possível reatribuir para si mesmo.')
             else:
-                # only FUNC targets
                 if novo.tipo == Tipo_Usuario.FUNC:
-                    # allow if novo is member of same departamento, or has prior demandas, or dept has no members
                     allowed = False
                     worked = False
                     try:
@@ -167,9 +159,7 @@ def editarDemanda(request, id):
                         messages.error(request, 'Reatribuição negada: o funcionário não é membro do departamento e não possui histórico nesta unidade.')
                 else:
                     messages.error(request, 'Apenas funcionários podem ser alvos de reatribuição.')
-        # If the demanda was already concluded, do not allow changes to descricao/status.
         if original_status == 'concluido':
-            # if user tried to change descricao or status, inform them; otherwise just persist any reassign.
             descricao_attempt = request.POST.get('descricao')
             status_attempt = new_status
             changed_descr = descricao_attempt is not None and descricao_attempt != original_descr
@@ -177,7 +167,6 @@ def editarDemanda(request, id):
             if changed_descr or changed_status:
                 messages.error(request, 'Demanda concluída: descrição/status não podem ser alterados.')
         else:
-            # apply description and status changes for non-concluded demandas
             demanda.descricao = request.POST.get('descricao', demanda.descricao)
             try:
                 allowed = [c[0] for c in Demanda._meta.get_field('status').choices]
@@ -189,9 +178,8 @@ def editarDemanda(request, id):
         demanda.save()
         try:
             demanda.refresh_from_db()
-            messages.info(request, f'DEBUG: Demanda after save: descricao="{demanda.descricao}" status="{demanda.status}" funcionario_id={demanda.funcionario_id}')
         except Exception:
-            messages.info(request, 'DEBUG: Demanda saved but refresh failed.')
+            messages.info(request, 'Deu ruim ao atualizar os dados da demanda.')
         return redirect("minhasDemandas")
 
     # caso não tenha permissão
@@ -276,11 +264,9 @@ def reatribuirDemanda(request, id):
     # se usuário atual é FUNC, só permite reatribuir para FUNC que sejam membros do mesmo departamento
     allowed = False
     try:
-        # prefer checking the user's departamentos relation
         if novo.departamentos.filter(id=demanda.departamento_id).exists():
             allowed = True
         else:
-            # fallback: allow if target already has had demands in the same department
             worked = Demanda.objects.filter(funcionario=novo, departamento=demanda.departamento).exists()
             if worked:
                 allowed = True
@@ -294,7 +280,6 @@ def reatribuirDemanda(request, id):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'ok': True, 'msg': f'Demanda reatribuída para {novo.nome}.'})
     else:
-        # If the department has no explicit members configured, allow fallback reassign
         try:
             members_count = demanda.departamento.membros.count()
         except Exception:
@@ -307,7 +292,6 @@ def reatribuirDemanda(request, id):
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'ok': True, 'msg': f'Demanda reatribuída para {novo.nome} (fallback).'})
         else:
-            # include member ids in the message to help debug misconfigured departments
             try:
                 member_ids = list(demanda.departamento.membros.values_list('id', flat=True))
             except Exception:
